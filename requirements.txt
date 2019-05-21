@@ -1,0 +1,6 @@
+pandas
+numpy
+gunicorn
+python-dotenv
+flask
+Flask-SQLAlchemy
