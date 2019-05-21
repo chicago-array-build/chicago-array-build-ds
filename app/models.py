@@ -3,6 +3,7 @@
 Schema: https://dbdiagram.io/d/5ce41f0e1f6a891a6a6564ae
 """
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.schema import UniqueConstraint
 
 DB = SQLAlchemy()
 
