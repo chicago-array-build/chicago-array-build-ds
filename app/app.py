@@ -12,6 +12,7 @@ def create_app():
     """Create and configure and instance of the Flask application."""
     app = Flask(__name__)
     app.config.from_object(Config)
+    DB.init_app(app)
 
     @app.shell_context_processor
     def make_shell_context():

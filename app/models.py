@@ -1,14 +1,12 @@
-"""Connect to AWS RDS instance"""
-from os import getenv
+"""SQLAlchemy models and utility functions for TwitOff."""
+from flask_sqlalchemy import SQLAlchemy
 
-import psycopg2
+DB = SQLAlchemy()
 
-if getenv('FLASK_ENV') == 'production':
-    DB = psycopg2.connect(
-        dbname=environ["DB_NAME"],
-        user=environ["DB_USER"],
-        password=environ["DB_PWD"],
-        host=environ["DB_HOST"],
-    )
-else:
-    DB = None
+class Observation(DB.Model):
+    """Twitter users corresponding to Tweets in the Tweet table."""
+    # sensor_id = DB.Column(DB.String(15))
+    # name = DB.Column(DB.String(15), nullable=False)
+
+    def __repr__(self):
+        return f'<AoT Record {self.name}>'

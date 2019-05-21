@@ -1,5 +1,14 @@
 # Chicago Array of Things Build: Data Science Server
 
+## Resources
+* [Database Schema](https://dbdiagram.io/d/5ce41f0e1f6a891a6a6564ae)
+* https://api-of-things.plenar.io/
+* https://api.arrayofthings.org/
+* https://arrayofthings.github.io/
+* [Array of Things Workshop in R](https://geodacenter.github.io/aot-workshop/)
+* [Array of Things Jupyter Notebook Tutorial](https://github.com/ddiLab/CommunitySensing/blob/master/AoT-Workshop_2018/AoT_Tutorial.ipynb)
+
+
 ## Development Build
 
 1. In the root of this repo, create  virtual environment ([guide](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/))
