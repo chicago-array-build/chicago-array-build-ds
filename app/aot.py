@@ -12,6 +12,12 @@ from .models import DB
 
 SENSOR_DF = pd.read_csv('data/sensor_mapping.csv')
 
+if not Path('data').exists():
+    Path('data').mkdir()
+
+if not Path('data/ignore').exists():
+    Path('data/ignore').mkdir()
+
 
 def unpack_response(response, page_limit=1000):
     try:

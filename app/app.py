@@ -67,20 +67,21 @@ def create_app():
 
     @app.route('/plot', methods=['GET'])
     def predict():
-        # TODO
-        # gather parameters
         sensor_type = request.args.get('sensor_type')
+        measure = request.args.get('measure')
 
-        # verify minimum parameters
-        if not sensor_type:
+        if not all([sensor_type, measure]):
             return jsonify(
-                message="Error: ")
+                message="Error: must supply sensor_type and meaure arguments")
 
-        # generate plot, return plot URL
-        
+        # query the database
+        # generate plots
+
         return jsonify(
-            message="success",
-            plot_url="",
+            message="Success",
+            map_url="",
+            raw_url="",
+            hourly_url="",
         )
 
     return app
