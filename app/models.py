@@ -1,40 +1,39 @@
-
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.schema import UniqueConstraint
 
-
 DB = SQLAlchemy()
 
-"""
-Schema: https://dbdiagram.io/d/5ce41f0e1f6a891a6a6564ae
-Useful Documentation: https://docs.sqlalchemy.org/en/13/orm/tutorial.html
-"""
 
 class Node(DB.Model):
     node_id =  DB.Column(DB.String(100), primary_key=True)
-    lat = DB.Column(DB.BigInteger)
-    lon = DB.Column(DB.BigInteger)
+    lat = DB.Column(DB.Float)
+    lon = DB.Column(DB.Float)
     community_area = DB.Column(DB.String(100))
     description = DB.Column(DB.String(1000))
+
     def __repr__(self):
         return f'<Node: {self.node_id}>'
 
 
 class Sensor(DB.Model):
     sensor_path = DB.Column(DB.String(100), primary_key=True)
-    node_id = DB.Relationship('Node', backref=DB.backref('sensors', lazy=True))
-    sensor_type = DB.Column(DB.String(100))
+    sensor_type = DB.Column(DB.String(100)) # Environmental, .etc
+    sensor_measure = DB.Column(DB.String(100)) # Temperature, .etc
     hrf_unit = DB.Column(DB.String(100))
-    hrf_minval = DB.Column(DB.BigInteger())
-    hrf_maxval = DB.Column(DB.BigInteger())
+    hrf_minval = DB.Column(DB.Float)
+    hrf_maxval = DB.Column(DB.Float)
+
     def __repr__(self):
         return f'<Sensor: {self.sensor_path}>'
 
 
 class Observation(DB.Model):
-    timestamp_utc = DB.Column(DB.BigInteger(100))
-    node_id = DB.Relationship('Node', backref=DB.backref('sensors', lazy=True))
-    sensor_path = DB.Relationship('Sensor', backref=DB.backref('observations', lazy=True))
+    id = DB.Column(DB.BigInteger, primary_key=True)
+    timestamp_utc = DB.Column(DB.BigInteger)
+    node_id = DB.Column(
+        DB.BigInteger, DB.ForeignKey('node.node_id'), nullable=False)
+    sensor_path = DB.Column(
+        DB.BigInteger, DB.ForeignKey('sensor.sensor_path'), nullable=False)
     value_hrf = DB.Column(DB.String(100))
 
     def __repr__(self):

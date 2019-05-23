@@ -1,6 +1,9 @@
+aot_client
 pandas
 numpy
 gunicorn
 python-dotenv
 flask
 Flask-SQLAlchemy
+plotly
+dash
