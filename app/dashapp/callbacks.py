@@ -1,8 +1,8 @@
-from dash.dependencies import Input
-from dash.dependencies import Output
-import plotly.graph_objs as go
-from ..aot import SENSOR_DF, query_aot
 import pandas as pd
+import plotly.graph_objs as go
+from dash.dependencies import Input, Output
+
+from ..aot import SENSOR_DF, query_aot
 
 
 def register_callbacks(app):
@@ -36,7 +36,7 @@ def register_callbacks(app):
                 xaxis={'title': 'Date'},
                 yaxis={'title': 'Value'},
             )
-        }   
+        }
 
     @app.callback(Output('select-sensor-meas', 'options'), 
                   [Input('select-sensor-cat', 'value')])

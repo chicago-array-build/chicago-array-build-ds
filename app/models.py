@@ -29,11 +29,11 @@ class Sensor(DB.Model):
 
 class Observation(DB.Model):
     id = DB.Column(DB.BigInteger, primary_key=True)
-    timestamp_utc = DB.Column(DB.BigInteger)
+    timestamp = DB.Column(DB.DateTime)
     node_id = DB.Column(
-        DB.BigInteger, DB.ForeignKey('node.node_id'), nullable=False)
+        DB.String(100), DB.ForeignKey('node.node_id'), nullable=False)
     sensor_path = DB.Column(
-        DB.BigInteger, DB.ForeignKey('sensor.sensor_path'), nullable=False)
+        DB.String(100), DB.ForeignKey('sensor.sensor_path'), nullable=False)
     value_hrf = DB.Column(DB.String(100))
 
     def __repr__(self):

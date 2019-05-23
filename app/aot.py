@@ -96,17 +96,18 @@ def load_aot_archive_day(day: str):
     with open(write_path, 'wb') as f:  
         f.write(r.content)
 
-    # read the local tar file
-    tf = tarfile.TarFile(write_path)
-
-    # extract observations csv
-    target_file = f'chicago-complete.daily.{day}/data.csv.gz'
-    tf.extract(target_file, path=temp_dir)
+    # read the local tar file and extract observations csv
+    with tarfile.TarFile(write_path) as t:
+        target_file = f'chicago-complete.daily.{day}/data.csv.gz'
+        t.extract(target_file, path=temp_dir)
 
     # load observations csv
     df = pd.read_csv(temp_dir / target_file, compression='gzip')
-    
-    # TODO: delete local files
+
+    # delete local files
+    write_path.unlink()
+    (temp_dir / target_file).unlink()
+    (temp_dir / target_file).parent.rmdir()
 
     return df
 
@@ -125,6 +126,9 @@ def clean_aot_archive_obs(df):
 
     df = df.loc[df['value_hrf'].notna()]
 
-    df = df.groupby(['node_id', 'sensor_path']).resample('30min').mean().reset_index()
+    df = (df.groupby(['node_id', 'sensor_path'])
+            .resample('30min')
+            .mean()
+            .reset_index())
 
     return df

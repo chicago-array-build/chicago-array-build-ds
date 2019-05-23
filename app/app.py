@@ -4,9 +4,11 @@ from pathlib import Path
 
 import dash
 from flask import Flask, jsonify, request
+from sqlalchemy import func
 
 from .config import Config
-from .models import DB
+from .models import DB, Observation
+from .aot import load_aot_archive_day, clean_aot_archive_obs
 
 
 def create_app():
@@ -18,7 +20,7 @@ def create_app():
 
     @app.shell_context_processor
     def make_shell_context():
-        return {'DB': DB}
+        return {'DB': DB, 'Observation': Observation}
 
     @app.route('/')
     def root():
@@ -30,15 +32,41 @@ def create_app():
         DB.create_all()
         return redirect(url_for('root'))
 
+    @app.route('/update')
+    def update():
+        """Update database"""
+        date = request.args.get('date')
+        if not date:
+            return jsonify(
+                message="Error: must supply date as 'YYYY-MM-DD'")
+
+        df = load_aot_archive_day(date)
+        df = clean_aot_archive_obs(df)
+        max_id = DB.session.query(func.max(Observation.id)).scalar()
+
+        if not max_id:
+            max_id = 0
+
+        df['id'] = list(range(max_id + 1, max_id + len(df) + 1))
+
+        df.to_sql(
+            'observation', con=DB.engine, if_exists='append', index=False
+        )
+
+        return jsonify(
+                message=f"Success: added {date}")
+    
+
     @app.route('/plot', methods=['GET'])
     def predict():
+        # TODO
         # gather parameters
-        user_id = request.args.get('sensor_type')
+        sensor_type = request.args.get('sensor_type')
 
         # verify minimum parameters
-        if not user_id:
+        if not sensor_type:
             return jsonify(
-                message="Error: must pass user_id, e.g. /predict?user_id=1")
+                message="Error: ")
 
         # generate plot, return plot URL
         
