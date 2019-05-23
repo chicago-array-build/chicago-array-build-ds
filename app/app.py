@@ -9,7 +9,7 @@ from sqlalchemy import func
 from .config import Config
 from .models import DB, Observation
 from .aot import load_aot_archive_day, clean_aot_archive_obs
-
+from .helper import get_sensors, initialize_sensors, initialize_nodes
 
 def create_app():
     """Create and configure and instance of the Flask application."""
@@ -18,6 +18,9 @@ def create_app():
     DB.init_app(app)
     register_dashapp(app)
 
+    initialize_nodes()
+    initialize_sensors()
+    
     @app.shell_context_processor
     def make_shell_context():
         return {'DB': DB, 'Observation': Observation}
