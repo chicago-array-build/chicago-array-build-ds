@@ -8,8 +8,11 @@ from sqlalchemy import func
 
 from .config import Config
 from .models import DB, Observation
-from .aot import load_aot_archive_day, clean_aot_archive_obs
-from .helper import get_sensors, initialize_sensors, initialize_nodes
+from .aot import (
+    load_aot_archive_day, clean_aot_archive_obs, 
+    initialize_sensors, initialize_nodes
+)
+
 
 def create_app():
     """Create and configure and instance of the Flask application."""
@@ -17,9 +20,6 @@ def create_app():
     app.config.from_object(Config)
     DB.init_app(app)
     register_dashapp(app)
-
-    initialize_nodes()
-    initialize_sensors()
     
     @app.shell_context_processor
     def make_shell_context():
@@ -28,6 +28,13 @@ def create_app():
     @app.route('/')
     def root():
         return jsonify(message='Nothing here')
+
+    @app.route('/initialize')
+    def initialize():
+        initialize_nodes()
+        initialize_sensors()
+
+        return jsonify(message='Message: added nodes and sensors')
 
     @app.route('/reset')
     def reset():

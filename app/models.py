@@ -5,11 +5,11 @@ DB = SQLAlchemy()
 
 
 class Node(DB.Model):
-    node_id =  DB.Column(DB.String(100), primary_key=True)
+    node_id = DB.Column(DB.String(100), primary_key=True)
+    vsn = DB.Column(DB.String(100))
     lat = DB.Column(DB.Float)
     lon = DB.Column(DB.Float)
     community_area = DB.Column(DB.String(100))
-    description = DB.Column(DB.String(1000))
 
     def __repr__(self):
         return f'<Node: {self.node_id}>'

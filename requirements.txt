@@ -7,3 +7,5 @@ flask
 Flask-SQLAlchemy
 plotly
 dash
+bs4
+lxml

@@ -6,6 +6,10 @@ import pandas as pd
 import requests
 from aot_client import AotClient, F
 
+from bs4 import BeautifulSoup
+
+from .models import DB
+
 SENSOR_DF = pd.read_csv('data/sensor_mapping.csv')
 
 
@@ -14,6 +18,7 @@ def unpack_response(response, page_limit=1000):
         pages = []
         for i, page in enumerate(response):
             if i + 1 > page_limit:
+                print('Hit page limit.')
                 break
             pages.extend(page.data)
     except HTTPError as e:
@@ -31,6 +36,7 @@ def time_x_mins_ago(minutes:int):
     t = t.isoformat()
     
     return t[0:19]
+
 
 def process_observations(obs_df):
     obs_df = obs_df.copy()
@@ -85,7 +91,7 @@ def query_aot(sensor_hrf, size_per_page=100000, page_limit=1, mins_ago=12*60):
 
 
 def load_aot_archive_day(day: str):
-    """Pass day as 'YYYY-MM-DD' string """
+    """Pass day as 'YYYY-MM-DD' string"""
     # load tar file from url
     url = f'https://s3.amazonaws.com/aot-tarballs/chicago-complete.daily.{day}.tar'
     r = requests.get(url)
@@ -132,3 +138,53 @@ def clean_aot_archive_obs(df):
             .reset_index())
 
     return df
+
+
+def get_sensors():
+    '''
+    Returns a DataFrame with information on sensors. 
+    '''
+    r = requests.get('https://aot-file-browser.plenar.io/'
+                     'data-sets/chicago-complete')
+    soup = BeautifulSoup(r.text, 'lxml')
+    sensors = pd.read_html(str(soup.findAll(class_='table')[3]))[0]
+
+    sensors['sensor_path'] = (
+        sensors.subsystem + '.' + 
+        sensors.sensor + '.' + 
+        sensors.parameter)
+    
+    return sensors
+
+
+def initialize_sensors():
+    df1 = get_sensors()
+
+    df2 = pd.read_csv('data/sensor_mapping.csv')
+    df2 = df2[['sensor_measure', 'sensor_path', 'sensor_type']]
+
+    df3 = pd.merge(df1, df2.dropna(subset=['sensor_measure']), 
+                   on='sensor_path')
+    
+    df3 = df3[['sensor_path', 'sensor_type', 'sensor_measure', 
+               'hrf_unit', 'hrf_minval', 'hrf_maxval']]
+    
+    df3.to_sql(
+        'sensor', con=DB.engine, if_exists='append', index=False
+    )
+
+
+def get_nodes():
+    '''Returns a DataFrame with information on nodes.'''
+    df = pd.read_csv('data/nodes.csv')
+    df['vsn'] = df['vsn'].str.zfill(3)
+    
+    return df
+
+
+def initialize_nodes():
+    nodes = get_nodes()
+    
+    nodes.to_sql(
+        'node', con=DB.engine, if_exists='append', index=False
+    )
