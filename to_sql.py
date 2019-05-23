@@ -1,7 +1,7 @@
 import tarfile
 import pandas as pd
 
-
+# link is https://s3.amazonaws.com/aot-tarballs/chicago-complete.weekly.2019-04-15-to-2019-04-21.tar
 file = 'Downloads/chicago-complete.weekly.2019-04-15-to-2019-04-21.tar'
 
 tf = tarfile.TarFile(file)
