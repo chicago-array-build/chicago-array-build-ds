@@ -39,9 +39,22 @@
     FLASK_APP=app:APP
     FLASK_ENV="development"
     FLASK_DEBUG=True
+    PLOTLY_USER=""
+    PLOTLY_API_KEY=""
     ```
 
-5. Run the server in development
+5. Instantiate the database
+    ```
+    flask shell
+    DB.create_all()
+    ```
+
+6. Run the server in development
     ```
     flask run
+    ```
+
+7. _Optional:_ Create an ipython kernel to use Jupyter Notebook with this environment. After calling `jupyter notebook`, you'll need to select this kernel in the interface (see [documentation](https://ipython.readthedocs.io/en/stable/install/kernel_install.html)).
+    ```
+    ipython kernel install --user --name=chicago-aot-env
     ```
