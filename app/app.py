@@ -1,17 +1,15 @@
 import os
-import pandas as pd
 from pathlib import Path
 
 import dash
+import pandas as pd
 from flask import Flask, jsonify, request
 from sqlalchemy import func
 
+from .aot import (clean_aot_archive_obs, initialize_nodes, initialize_sensors,
+                  load_aot_archive_day)
 from .config import Config
 from .models import DB, Observation
-from .aot import (
-    load_aot_archive_day, clean_aot_archive_obs, 
-    initialize_sensors, initialize_nodes
-)
 
 
 def create_app():
