@@ -1,15 +1,17 @@
+import datetime
 import os
 from pathlib import Path
 
 import dash
 import pandas as pd
 from flask import Flask, jsonify, request
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 from .aot import (clean_aot_archive_obs, initialize_nodes, initialize_sensors,
                   load_aot_archive_day)
 from .config import Config
 from .models import DB, Observation
+from .plotting import make_map
 
 
 def create_app():
@@ -69,17 +71,43 @@ def create_app():
     def predict():
         sensor_type = request.args.get('sensor_type')
         measure = request.args.get('measure')
+        print(sensor_type, measure)
 
         if not all([sensor_type, measure]):
             return jsonify(
                 message="Error: must supply sensor_type and meaure arguments")
 
-        # query the database
-        # generate plots
+        # TODO: time could be a variable
+        t = (datetime.datetime.now() - 
+             datetime.timedelta(days=7))
+        t = t.strftime(r'%m/%d/%Y')
 
-        return jsonify(
+        sql = text(
+            "SELECT observation.*, node.lat, node.lon\n"
+            "FROM observation\n"
+            "INNER JOIN node\n"
+            "ON observation.node_id = node.node_id\n"
+            "LEFT JOIN sensor\n"
+            "ON observation.sensor_path = sensor.sensor_path\n"
+            "WHERE (\n"
+            f"    timestamp >= '{t}' AND\n"
+            f"    sensor_type = '{sensor_type}' AND\n"
+            f"    sensor_measure = '{measure}'\n"
+            ")"
+        )
+        result = DB.engine.execute(sql)
+        cols = result.keys()
+        result = result.fetchall()
+
+        df = pd.DataFrame(columns=cols, data=result)
+
+        map_url = make_map(df)
+        #raw_url = make_line_plot(df)
+        #hourly_url = make_houlry_bar_plot(df)
+
+        return  jsonify(
             message="Success",
-            map_url="",
+            map_url=map_url,
             raw_url="",
             hourly_url="",
         )
