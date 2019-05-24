@@ -1,8 +1,16 @@
 from os import getenv
 
 import pandas as pd
+import plotly
 import plotly.graph_objs as go
 import plotly.plotly as py
+
+
+def plotly_setup():
+    plotly.tools.set_credentials_file(
+        username=getenv('PLOTLY_USER'), 
+        api_key=getenv('PLOTLY_API_KEY')
+    )
 
 
 def make_map(df):

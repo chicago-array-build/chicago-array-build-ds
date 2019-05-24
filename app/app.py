@@ -10,7 +10,7 @@ from sqlalchemy import func, text
 from .aot import initialize_nodes, initialize_sensors, upload_aot_archive_date
 from .config import Config
 from .models import DB, Observation
-from .plotting import make_map
+from .plotting import make_map, plotly_setup
 
 
 def create_app():
@@ -18,6 +18,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     DB.init_app(app)
+    plotly_setup()
     register_dashapp(app)
     
     @app.shell_context_processor
@@ -64,7 +65,7 @@ def create_app():
 
         if not all([sensor_type, measure]):
             return jsonify(
-                message="Error: must supply sensor_type and meaure arguments")
+                message="Error: must supply sensor_type and measure arguments")
 
         # TODO: time could be a variable
         t = (datetime.datetime.now() - 
