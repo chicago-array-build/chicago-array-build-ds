@@ -42,3 +42,11 @@ def make_map(df):
     plot_url = py.plot(fig, filename='Multiple Mapbox', auto_open=False)
 
     return plot_url
+
+
+def make_line_plot(df):
+    pass
+
+
+def make_houlry_bar_plot(df):
+    pass
