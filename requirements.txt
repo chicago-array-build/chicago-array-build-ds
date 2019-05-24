@@ -9,4 +9,4 @@ plotly
 dash
 bs4
 lxml
-psychopg2
+psycopg2
