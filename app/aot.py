@@ -1,14 +1,17 @@
 import datetime
+import os
 import tarfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pandas as pd
+import psycopg2
 import requests
 from aot_client import AotClient, F
-
 from bs4 import BeautifulSoup
+from sqlalchemy import func
 
-from .models import DB
+from .models import DB, Observation
 
 SENSOR_DF = pd.read_csv('data/sensor_mapping.csv')
 
@@ -194,3 +197,55 @@ def initialize_nodes():
     nodes.to_sql(
         'node', con=DB.engine, if_exists='append', index=False
     )
+
+
+def upload_aot_archive_date(date):
+    df = load_aot_archive_day(date)
+    df = clean_aot_archive_obs(df)
+
+    # filter df to the sensors we care about
+    sensors = (DB.engine.execute("SELECT sensor.sensor_path FROM sensor")
+                 .fetchall())
+    sensors = [t[0] for t in sensors]
+    df = df.loc[df['sensor_path'].isin(sensors)]
+
+    max_id = (DB.engine.execute("SELECT max(observation.id) FROM observation")
+                .fetchone()[0])
+    if not max_id:
+        max_id = 0
+
+    df['id'] = list(range(max_id + 1, max_id + len(df) + 1))
+
+    upload_df_to_db(df=df, table_name='observation')
+
+
+def upload_df_to_db(df, table_name):
+    result = urlparse(os.getenv("HEROKU_DB_URL"))
+    username = result.username
+    password = result.password
+    database = result.path[1:]
+    hostname = result.hostname
+    conn = psycopg2.connect(
+        database = database,
+        user = username,
+        password = password,
+        host = hostname
+    )
+    
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT * FROM {table_name}")  # get column names and order
+    cols = [desc[0] for desc in cur.description]
+
+    csv_path = 'to_upload.csv'
+    df[cols].to_csv(csv_path, index=False)
+
+    with open(csv_path, 'r') as f:
+        next(f)  # Skip the header row.
+        cur.copy_from(f, table_name, sep=',')
+        conn.commit()
+    
+    os.remove(csv_path)
+    
+    cur.close()
+    conn.close()
