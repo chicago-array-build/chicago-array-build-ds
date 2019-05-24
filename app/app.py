@@ -4,7 +4,7 @@ from pathlib import Path
 
 import dash
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from sqlalchemy import func, text
 
 from .aot import (clean_aot_archive_obs, initialize_nodes, initialize_sensors,
@@ -40,7 +40,8 @@ def create_app():
     def reset():
         DB.drop_all()
         DB.create_all()
-        return redirect(url_for('root'))
+
+        return jsonify(message='Success: reset database')
 
     @app.route('/update')
     def update():
