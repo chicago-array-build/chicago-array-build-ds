@@ -10,7 +10,8 @@ from sqlalchemy import func, text
 from .aot import initialize_nodes, initialize_sensors, upload_aot_archive_date
 from .config import Config
 from .models import DB, Observation
-from .plotting import make_map, plotly_setup
+from .plotting import (make_hourly_bar_plot, make_line_plot, make_map,
+                       plotly_setup)
 
 
 def create_app():
@@ -90,16 +91,17 @@ def create_app():
         result = result.fetchall()
 
         df = pd.DataFrame(columns=cols, data=result)
+        df['value_hrf'] = pd.to_numeric(df['value_hrf'])
 
         map_url = make_map(df)
-        #raw_url = make_line_plot(df)
-        #hourly_url = make_houlry_bar_plot(df)
+        raw_url = make_line_plot(df, measure)
+        hourly_url = make_hourly_bar_plot(df, measure)
 
         return  jsonify(
             message="Success",
             map_url=map_url,
-            raw_url="",
-            hourly_url="",
+            raw_url=raw_url,
+            hourly_url=hourly_url,
         )
 
     return app

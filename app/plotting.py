@@ -47,14 +47,57 @@ def make_map(df):
     )
 
     fig = go.Figure(data=data, layout=layout)
-    plot_url = py.plot(fig, filename='Multiple Mapbox', auto_open=False)
+    plot_url = py.plot(fig, auto_open=False)
 
     return plot_url
 
 
-def make_line_plot(df):
-    pass
+def make_line_plot(df, measure):
+    df = df.copy()
+
+    data = []
+    for g_name, g_df in df.groupby('node_id'):
+        data.append(
+            go.Scatter(
+                x=g_df['timestamp'],
+                y=g_df['value_hrf'],
+                mode = 'lines+markers',
+            )
+        )
+
+    layout = dict(
+        title = f'{measure} Readings Over Time',
+        xaxis = dict(title = 'Time'),
+        yaxis = dict(title = f'{measure} Reading'),
+    )
+
+    fig = dict(data=data, layout=layout)
+
+    plot_url = py.plot(fig, auto_open=False)
+
+    return plot_url
 
 
-def make_houlry_bar_plot(df):
-    pass
+def make_hourly_bar_plot(df, measure):
+    df = df.copy()
+
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.groupby(df['timestamp'].dt.hour)['value_hrf'].mean()
+
+    data = [go.Bar(
+        x=df.index,
+        y=df.values,
+    )]
+
+    layout = dict(
+        title = f'{measure} Readings Averaged by Hour',
+        xaxis = dict(title = 'Hour'),
+        yaxis = dict(title = f'{measure} Reading'),
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+
+    plot_url = py.plot(fig, auto_open=False)
+
+    return plot_url
+
