@@ -17,6 +17,9 @@ def register_callbacks(app):
                 .mean()
                 .reset_index())
 
+
+        print(df.head())
+
         traces = []
         for g_i, g_df in df.groupby('node_vsn'):
             traces.append(go.Scatter(

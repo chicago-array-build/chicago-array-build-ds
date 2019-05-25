@@ -4,7 +4,7 @@ import dash_html_components as html
 
 layout = html.Div(children=[
     html.H1(
-        children='Chicago Array of Things', 
+        children='Chicago Array of Things Dashboard', 
         style={
             'textAlign': 'center'
         }
@@ -18,17 +18,20 @@ layout = html.Div(children=[
     ),
 
     dcc.Dropdown(
+        id='select-sensor-cat',
+        placeholder="Select a Sensor Category",
         options=[
             {'label': 'Environmental', 'value': 'Environmental'},
             {'label': 'Air Quality', 'value': 'Air Quality'},
             {'label': 'Image Processing', 'value': 'Image Processing'}
         ],
         searchable=False,
-        placeholder="Select a Sensor Category",
-        id='select-sensor-cat',
     ),
 
-    dcc.Dropdown(id='select-sensor-meas'),
+    dcc.Dropdown(
+        id='select-sensor-meas',
+        placeholder="Select a Sensor Measure",
+    ),
 
     dcc.Graph(id='raw-value-graph'),
 

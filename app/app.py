@@ -117,7 +117,7 @@ def register_dashapp(app):
     app_dash = dash.Dash(
         __name__,
         server=app,
-        routes_pathname_prefix='/dash/',
+        routes_pathname_prefix='/dashboard/',
         external_stylesheets=external_stylesheets
     )
 

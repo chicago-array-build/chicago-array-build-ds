@@ -15,11 +15,37 @@ from .models import DB, Observation
 
 SENSOR_DF = pd.read_csv('data/sensor_mapping.csv')
 
-if not Path('data').exists():
-    Path('data').mkdir()
+for path in ['data', 'data/ignore']:
+    if not Path(path).exists():
+        Path(path).mkdir()
 
-if not Path('data/ignore').exists():
-    Path('data/ignore').mkdir()
+
+def query_aot(sensor_hrf, size_per_page=100000, page_limit=1, mins_ago=12*60):
+    sensors = (
+        SENSOR_DF.loc[SENSOR_DF['sensor_measure']==sensor_hrf, 'sensor_path']
+                 .unique()
+    )
+
+    if len(sensors) == 0:
+        return pd.DataFrame()
+    print(sensors)
+
+    client = AotClient()
+
+    # TODO: combine many sensors in API call
+    dfs = []
+    for sensor in sensors:
+        f = F('size', str(size_per_page))
+        f &= ('sensor', sensor)
+        f &= ('timestamp', 'ge', time_x_mins_ago(mins_ago))
+
+        response = client.list_observations(filters=f)
+        pages = unpack_response(response, page_limit=page_limit)
+        obs_df = pd.DataFrame(pages)
+        obs_df = process_observations(obs_df)
+        dfs.append(obs_df)
+    
+    return pd.concat(dfs)
 
 
 def unpack_response(response, page_limit=1000):
@@ -81,28 +107,11 @@ def process_observations(obs_df):
     return obs_df
 
 
-def query_aot(sensor_hrf, size_per_page=100000, page_limit=1, mins_ago=12*60):
-    sensor = SENSOR_DF.loc[SENSOR_DF['sensor_measure']==sensor_hrf, 
-                           'sensor_path'].values[0]
-
-    client = AotClient()
-
-    f = F('size', str(size_per_page))
-    f &= ('sensor', sensor)
-    f &= ('timestamp', 'ge', time_x_mins_ago(mins_ago))
-
-    response = client.list_observations(filters=f)
-    pages = unpack_response(response, page_limit=page_limit)
-    obs_df = pd.DataFrame(pages)
-    obs_df = process_observations(obs_df)
-    
-    return obs_df
-
-
-def load_aot_archive_day(day: str):
-    """Pass day as 'YYYY-MM-DD' string"""
+def load_aot_archive_day(date: str):
+    """Pass date as 'YYYY-MM-DD' string"""
     # load tar file from url
-    url = f'https://s3.amazonaws.com/aot-tarballs/chicago-complete.daily.{day}.tar'
+    url = ('https://s3.amazonaws.com/aot-tarballs/'
+           f'chicago-complete.daily.{date}.tar')
     r = requests.get(url)
     temp_dir = Path('data/ignore')
     write_path = temp_dir / 'data.tar'
@@ -113,7 +122,7 @@ def load_aot_archive_day(day: str):
 
     # read the local tar file and extract observations csv
     with tarfile.TarFile(write_path) as t:
-        target_file = f'chicago-complete.daily.{day}/data.csv.gz'
+        target_file = f'chicago-complete.daily.{date}/data.csv.gz'
         t.extract(target_file, path=temp_dir)
 
     # load observations csv
