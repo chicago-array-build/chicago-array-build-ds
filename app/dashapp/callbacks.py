@@ -2,13 +2,23 @@ import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 
-from ..aot import SENSOR_DF, query_aot
+from ..aot_feed import SENSOR_DF, query_aot
 
 
 def register_callbacks(app):
     @app.callback(Output('raw-value-graph', 'figure'), 
                   [Input('select-sensor-meas', 'value')])
     def update_figure(selected_value):
+        if not selected_value:
+            return {
+                'data': [],
+                'layout': go.Layout(
+                    title='Raw Data (Last 12 Hours)',
+                    xaxis={'title': 'Date'},
+                    yaxis={'title': 'Sensor Reading'},
+                )
+            }
+        
         df = query_aot(sensor_hrf=selected_value, mins_ago=12*60)
         uom = df['uom'].values[0]
         df = df.set_index('timestamp')
@@ -16,9 +26,6 @@ def register_callbacks(app):
                 .resample('30min')
                 .mean()
                 .reset_index())
-
-
-        print(df.head())
 
         traces = []
         for g_i, g_df in df.groupby('node_vsn'):
@@ -47,7 +54,11 @@ def register_callbacks(app):
     @app.callback(Output('select-sensor-meas', 'options'), 
                   [Input('select-sensor-cat', 'value')])
     def update_dropdown(selected_value):
+        if not selected_value:
+            return {}
+            
         d = (SENSOR_DF.groupby('sensor_type')['sensor_measure']
-                      .unique()
-                      .to_dict())
+                    .unique()
+                    .to_dict())
+
         return [{'label': i, 'value': i} for i in d[selected_value]]

@@ -31,6 +31,7 @@ layout = html.Div(children=[
     dcc.Dropdown(
         id='select-sensor-meas',
         placeholder="Select a Sensor Measure",
+        searchable=False,
     ),
 
     dcc.Graph(id='raw-value-graph'),
